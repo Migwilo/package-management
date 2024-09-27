@@ -1,33 +1,7 @@
-#  **<span style="color:green">Landmark Technologies.</span>**
-### **<span style="color:green">Contacts: +1437 215 2483<br> WebSite : <http://mylandmarktech.com/></span>**
-### **Email: mylandmarktech@gmail.com**
-
-
-
-## Kubernetes Setup Using Kubeadm In AWS EC2 Ubuntu Servers.
-##### Prerequisite
-+ AWS Acccount.
-+ Create 3 - Ubuntu Servers -- 18.04.
-+ 1 Master (4GB RAM , 2 Core)  t2.medium
-+ 2 Workers  (1 GB, 1 Core)     t2.micro
-+ Create Security Group and open required ports for kubernetes.
-   + Open all port for this illustration
-+ Attach Security Group to EC2 Instance/nodes.
-
-## Assign hostname &  login as ‘root’ user because the following set of commands need to be executed with ‘sudo’ permissions.
-```sh
-sudo hostnamectl set-hostname master
-sudo -i
-```
-
-``` sh
 #!/bin/bash
-# common.sh
-# copy this script and run in all master and worker nodes
 #i1) Switch to root user [ sudo -i]
 
 sudo hostnamectl set-hostname  node1
-sudo -i
 
 #2) Disable swap & add kernel settings
 
@@ -92,7 +66,7 @@ sed -i 's/SystemdCgroup \= false/SystemdCgroup \= true/g' /etc/containerd/config
 systemctl restart containerd
 systemctl enable containerd
 
-#5) Installing kubeadm, kubelet and kubectl
+5) Installing kubeadm, kubelet and kubectl
 
 # Update the apt package index and install packages needed to use the Kubernetes apt repository:
 
@@ -101,16 +75,16 @@ apt-get install -y apt-transport-https ca-certificates curl
 
 # Download the Google Cloud public signing key:
 
-curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+curl -fsSLo /etc/apt/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
 
 # Add the Kubernetes apt repository:
 
-echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
 
 # Update apt package index, install kubelet, kubeadm and kubectl, and pin their version:
 
 apt-get update
-sudo apt install -y kubeadm=1.28.1-1.1 kubelet=1.28.1-1.1 kubectl=1.28.1-1.1
+apt-get install -y kubelet kubeadm kubectl
 
 # apt-mark hold will prevent the package from being automatically upgraded or removed.
 
@@ -122,4 +96,5 @@ systemctl daemon-reload
 systemctl start kubelet
 systemctl enable kubelet.service
 
-
+sudo kubeadm join 10.0.0.6:6443 --token xmzufh.e0nu3kb5ohijfxyh \
+        --discovery-token-ca-cert-hash sha256:579b6a53bd00c8483f5150b9fb521b6431fc38b1ac716b8b9a5f668928a93771
